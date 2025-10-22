@@ -1,56 +1,65 @@
-Netex Server ve Netex Sensör kurulumu
-#
-postgres
-#
-monitoring
-#
-tutorial
-#
-linux
-NETEX SERVER KURMA ADIMLARI
-not: zabbixin LTS sürümünün kurulu olduğu varsayılmıştır. Zabbix kurulumu için: zabbix kurulumu
+# 🛰️ Netex Server ve Netex Sensör Kurulumu
 
-Postgresql kurulumu:
+> Bu doküman, Netex Server ve Netex Sensör bileşenlerinin Linux ortamında kurulumu için adım adım bir rehberdir.  
+> ⚙️ Zabbix'in **LTS sürümünün kurulu olduğu** varsayılmıştır.
 
+---
+
+## 📦 PostgreSQL Kurulumu
+
+```bash
 sudo apt update
 sudo apt install postgresql postgresql-contrib
+Veritabanı sunucusuna bağlanalım:
 
-veritabanı sunucusuna bağlanma:
-
+bash
+Kodu kopyala
 sudo -u postgres psql
-Kullanıcı ve veritabanımızı oluşturalım
+Kullanıcı ve veritabanı oluşturalım:
 
+sql
+Kodu kopyala
 CREATE USER netex WITH PASSWORD '1';
 CREATE DATABASE netex WITH OWNER netex;
+Sonrasında \q ile çıkış yapabilirsiniz.
 
-Daha sonrasında \q ile çıkış yapabiliriz
+🧩 Netex Server Kurulumu
+Kurulum, size verilen .deb dosyası ile yapılır:
 
-NETEX server kurulumu:
+bash
+Kodu kopyala
+sudo apt install ./netex-server-455-x64.deb -y
+Root kullanıcısına geçelim:
 
-kurulumu size verilen deb dosyası ile yapabilirsiniz.
-
-sudo apt install ./netex-sensor-455-x64.deb -y
-Sonra düzenleme yapabilmek için sudo suile root kullanıcısına geçiyoruz, oradan
+bash
+Kodu kopyala
+sudo su
 cd /opt/netex
-komutu ile netex klasörüne geçip env.example içindeki içeriği .env içerisine kopyalıyoruz.
+.env dosyasını oluşturup düzenleyelim:
 
+bash
+Kodu kopyala
 cp env.example .env
-nano .env ile .env dosyasını açıp içini düzenliyoruz:
+nano .env
+⚙️ .env Dosyası Düzenleme
+Storage Configuration kısmında, farklı isimlerde DB veya USER oluşturulmadıysa değişiklik yapmaya gerek yoktur.
 
-storage configuration kısmında farklı isimlerde DB ve USER oluşturulmadıysa değişiklik yapnmaya gerek yoktur.
+Zabbix ayarları kısmında, Zabbix kurulumu sırasında kullandığınız kullanıcı adı, şifre ve Zabbix server IP’sini girin.
 
-Zabbix ayarlarını yaparken zabbix kurarken kullandığınız kullanıcı adı ve passwordu giriyoruz. URL kısmındaki ip adresi kısmına da zabbixin kurulu olduğu serverın ipsini giriyoruz.
+JWT Key için:
 
-JWT KEY ‘i bulmak için Liman'ın kurulu olduğu makineye gidip
+Liman’ın kurulu olduğu makinede aşağıdaki komutları çalıştırın:
 
- sudo su
-cd /liman
-cd server
-cat .env 
+bash
+Kodu kopyala
+sudo su
+cd /liman/server
+cat .env
+Dosyanın sonunda JWT_SECRET değerini bulun ve .env dosyasındaki ilgili alana yapıştırın.
 
-diyoruz ve çıkan .env dosyasının içeriğinde en altta JWT_SECRET’ı buluyoruz. Sonrasında .env dosyasında JWT kısmına yapıştırıyoruz.
-
-.env dosyasının aşağıdaki kısımlarını yukarıdaki bilgilere göre düzenliyoruz.
+🧾 Örnek .env İçeriği
+env
+Kodu kopyala
 # Storage Configuration @required
 DB_HOST=127.0.0.1
 DB_NAME=netex
@@ -60,39 +69,37 @@ DB_USER=netex
 
 ZABBIX_USERNAME="<zabbix_username>"
 ZABBIX_PASSWORD="<zabbix_password>"
-ZABBIX_URL="<http://zabbix_ip_adresi/zabbix/api_jsonrpc.php>"
+ZABBIX_URL="http://<zabbix_ip_adresi>/zabbix/api_jsonrpc.php"
 ZABBIX_SYNC="ON"
 
 # Liman JWT Secret for http admin service usage @not-required
-JWT_SECRET= <yukarıda nasıl bulunacağı belirtildi.> 
-
-Daha sonrasında bu iki komutla restart edip netex server'daki tüm servisleri kontrol edelim:
-
-
+JWT_SECRET=<JWT_SECRET_BURAYA>
+🔁 Servisleri Yeniden Başlatma ve Kontrol Etme
+bash
+Kodu kopyala
 sudo systemctl restart netex@*
 sudo systemctl status netex@*
+🌐 Netex Sensör Kurulumu
+Netex’in kurulu olduğu makinede aşağıdaki adımları izleyin:
 
- 
-
- 
-
- 
-
- 
-
-NETEX SENSÖR KURMA ADIMLARI
-netex kurulu makinede şunları yapalım:
-
+bash
+Kodu kopyala
 sudo su
 cd /opt/netex/clients
-ls 
+ls
+Görünen listede sensör için gerekli .deb dosyasını kurun:
 
-burada sensör için gerekli kurulum dosyaları sıralanır. Ubuntu cihaza deb dosyası şu şekilde kurulur:
-
+bash
+Kodu kopyala
 apt install ./netex-sensor-455-x64.deb -y
+.env dosyasını düzenleyin:
 
-opt/netex-sensor/.env dosyasının içeriğini düzenleyelim.
-
+bash
+Kodu kopyala
+nano /opt/netex-sensor/.env
+🧾 Örnek Sensör .env İçeriği
+env
+Kodu kopyala
 SERVER_URL="https://<netex_server_ip>:7782"
 SENSOR_IP="<netex_server_ip>"
 DNS_SERVER_URL="<DNS_server_ip>:53"
@@ -103,28 +110,27 @@ SOURCE_IP_KEY=8
 DEST_IP_KEY=12
 SOURCE_MAC_KEY=56
 DEST_MAC_KEY=57
+⚠️ Not: Lisans olmadığında netex-sensor çalışmayacaktır.
 
-Not: Lisans olmadığında netex-sensör çalışmayacaktır.
+🧩 Netex’i Liman Arayüzüne Ekleme
+Liman arayüzüne, Liman’ın kurulu olduğu IP adresinden erişin.
 
-** NETEX’İ LİMAN ARAYÜZÜNE EKLEME**
+Sunucular ekranına gidin → Sunucu Ekle butonuna tıklayın.
 
-Limanı kurduğumuz ip adresindeki Liman arayüzüne gidelim.
+Port numarasını bulmak için aşağıdaki komutu çalıştırın:
 
-Öncelikle sunucular ekranına gelelim ve sunucu ekle diyelim.
+bash
+Kodu kopyala
+journalctl -u netex@* -f
+Çıktıda port 7781 gibi bir değer göreceksiniz — bunu Liman arayüzünde ilgili alana girin.
 
-Bu kısımda portu kendimiz ekliyoruz bu portu bulmak için terminalde netex'i restart ettikten sonra journalctl -u netex@* -fçalıştırdığımda şöyle bir çıktı alıyoruz ve orada port numarası yazıyor. Onu resimdeki belirtilen alana giriyoruz.
+Anahtar Türü kısmında Anahtarsız Giriş seçeneğini işaretleyin.
 
- 
-bu durımda bu port 7781
+Sunucuyu ekledikten sonra, sol panelden sunucuya tıklayın → Eklentiler sekmesine geçin → Eklenti Ekle butonuna basın.
 
- 
+🧱 Etiketler
+#postgres #monitoring #tutorial #linux #netex
 
-Anahatar Türü kısmında anahtarsız giriş seçelim.
-
-Netex kurulu sunucumuzu ekleyelim ve sol panelden sunucumuza tıklayalım . eklentiler kısmına basalım. buradan da eklenti ekle diyelim.
-
-Ekle diyerek ağ keşif seçelim ve böylelikle eklentiyi eklemiş olduk.
-
-Arayüzde sol panelden eklentiye tıkladığımızda lisanslanmamış olsa da anasayfa açılır:
-
- 
+✍️ Hazırlayan: Emineo
+🗓️ Sürüm: 1.0
+💻 Platform: Linux / Ubuntu
