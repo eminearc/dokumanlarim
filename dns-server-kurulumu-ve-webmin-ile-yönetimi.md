@@ -210,3 +210,45 @@ sudo journalctl -u bind9 -f
 ## Sonuç
 
 Bu rehberde BIND9 DNS sunucusunu kurduk, yapılandırdık ve test ettik. Sunucu artık yerel ağ içinde "liman" adlı etki alanı için sorguları cevaplamaya hazır.
+
+
+
+webmin arayüzüne girdim:
+
+1. Yeni "Bölgeler" (Zones) Eklemek
+Nasıl Yapılır: Webmin ana sayfasında "Create master zone" linkine tıklayarak.
+   <img width="1155" height="203" alt="image" src="https://github.com/user-attachments/assets/f1b88382-0cc9-42e7-baed-41a2ecb2535d" />
+
+Senaryo: Yarın "Kubernetes" projesi için k8s.local adında yeni bir alan adı oluşturup, tüm küme (cluster) IP'lerini buraya girebilirsin.
+<img width="1015" height="534" alt="image" src="https://github.com/user-attachments/assets/03e5c6fb-00b7-4541-9958-b22c5cd46339" />
+
+2. Bölge İçine Ekleyebileceğin "Kayıtlar" (Records)
+   Bir bölgenin içine girdiğinde (az önceki ekran görüntüsündeki liste), şu kayıt türlerini ekleyebilirsin:
+   <img width="1342" height="785" alt="image" src="https://github.com/user-attachments/assets/f501e838-faa9-46c9-976a-412e84a0a2e8" />
+
+
+A - Address (Adres Kaydı): En Temel Olan.
+Ne yapar: İsim -> IPv4 adresi eşleşmesi.
+
+Örnek: kamera.liman -> 192.168.1.50
+
+Kullanım: Sunucular, yazıcılar, cihazlar için.
+
+CNAME - Name Alias (Takma İsim): Tembeller İçin.
+
+Ne yapar: Bir ismi başka bir isme yönlendirir (IP'ye değil).
+
+Örnek: ftp.liman -> dosya.liman
+
+Kullanım: Eğer dosya.liman'ın IP adresi değişirse, ftp için ayrıca ayar yapmana gerek kalmaz; o da otomatik güncellenmiş olur.
+
+3. İleri Düzey Ayarlar (Global Server Options)
+Webmin ana sayfasında "Forwarding and Transfers" veya "Access Control Lists" gibi butonlar göreceksin. Buradan şunları yapabilirsin:
+
+Forwarding (Yönlendirme): Bizim elle named.conf.options dosyasına eklediğimiz 8.8.8.8 ayarı var ya? İşte onu buradan görsel olarak yönetebilirsin. "Benim bilmediğim adresleri kime sorayım?" ayarıdır.
+
+ACLs (Erişim Kontrolü): "Benim DNS sunucumu kimler kullanabilir?" ayarıdır.
+
+Örneğin: "Sadece 10.67.x.x ağındakiler bana soru sorabilsin, yabancılar (internet) soramasın" diyerek güvenliği artırabilirsin.
+
+
