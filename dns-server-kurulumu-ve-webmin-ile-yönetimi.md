@@ -1,4 +1,4 @@
-# BIND9 DNS Sunucusu Kurulum Rehberi
+k# BIND9 DNS Sunucusu Kurulum Rehberi
 
 ## Giriş
 
