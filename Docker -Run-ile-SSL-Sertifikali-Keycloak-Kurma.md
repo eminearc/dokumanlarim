@@ -1,34 +1,42 @@
-Docker Run İle SSL Sertifikalı Keycloak Kurma
-
 bu kurulum için bir domain adına ihtiyacımız var benim senaryomda keycloak.local olarak ilerleyeceğim.
 
-1. Adım: Host makinemde, yani browserımla keycloak'a erişeceğim makinede /etc/hosts dosyasını nano ile açıp en alta şunu ekleyelim:
-<ip-adresi> keycloak.local
+**1. Adım:** Host makinemde, yani browserımla keycloak'a erişeceğim makinede `/etc/hosts` dosyasını nano ile açıp en alta şunu ekleyelim:
+`<ip-adresi> keycloak.local`
 
-2. Adım: Nginx kurulumu
+**2. Adım:** Nginx kurulumu
 
+```
 sudo apt update
 sudo apt install nginx
 
-
-3. Adım: SSL sertifikası oluşturma
+```
+**3. Adım:** SSL sertifikası oluşturma 
 önce sertifikayı koyacak dosya oluşturalım.
 
+```
 sudo mkdir -p /etc/ssl/certs/keycloak
-
+```
 openssl ile sertifika oluşturalım
+
+```
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-    -keyout /etc/ssl/certs/keycloak/keycloak.key \
+ 	-keyout /etc/ssl/certs/keycloak/keycloak.key \
  -out /etc/ssl/certs/keycloak/keycloak.crt \
  -subj "/CN=keycloak.local"
 
-4. Adım: Nginx yapılandırma
+```
+**4. Adım:** Nginx yapılandırma
 
 Yeni yapılandırma dosyası oluşturalım
+
+
+```
 sudo nano /etc/nginx/sites-available/keycloak.conf
 
+```
 aşağıdaki içeriği dosyanın içine yapıştıralım
 
+```
 server {
     listen 80;
     server_name keycloak.local;
@@ -56,24 +64,35 @@ server {
     }
 }
 
-5. Adım: Yapılandırmayı aktive etme ve nginx'i yeniden başlatma
+```
+**5. Adım**: Yapılandırmayı aktive etme ve nginx'i yeniden başlatma
 
+```
 sudo ln -s /etc/nginx/sites-available/keycloak.conf /etc/nginx/sites-enabled/
 
+```
 Nginx'in varsayılan "Welcome" sayfasını devre dışı bırakalım (çakışmasın):
 
+```
 sudo rm /etc/nginx/sites-enabled/default
+```
 test edelim
 
+```
 sudo nginx -t
 
+```
 restart edelim
 
+```
 sudo systemctl restart nginx
 
-6. Adım: Keycloak'ı kurma ve yapılandırma
+```
 
-Öncelikle Docker kurmamız lazım.
+**6. Adım:** Keycloak'ı kurma ve yapılandırma
+* Öncelikle Docker kurmamız lazım.
+
+```
 # Add Docker's official GPG key:
 sudo apt-get update
 sudo apt-get install ca-certificates curl
@@ -87,13 +106,20 @@ echo \
   $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 sudo apt-get update
+```
 kurulumu başlatalım
 
+```
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
 servis kontrolü yapmak istersek bu komutu çalıştıralım
 
+```
 sudo systemctl status docker
-Keycloak'ı docker run komutu ile kuralım. Burada kullanıcı adı şifre ve hostname verilir.
+```
+* Keycloak'ı docker run komutu ile kuralım. Burada kullanıcı adı şifre ve hostname verilir.
+
+```
 sudo docker run -d \
   -p 8080:8080 \
   -e KEYCLOAK_ADMIN=admin \
@@ -104,6 +130,11 @@ sudo docker run -d \
   start-dev
 
 
-sudo docker ps ile kontrol yapılabilir.
+```
+`sudo docker ps` ile kontrol yapılabilir.
 
 son olarak https://keycloak.local adresinden admin admin ile giriş yapalım.
+
+
+![Image description](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/p1vd0bs1739b6vkevkxp.png)
+
