@@ -33,3 +33,4 @@ sudo systemctl restart smbd
 sudo smbpasswd -a ubuntu
 ```
 
+
